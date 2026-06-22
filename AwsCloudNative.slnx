@@ -1,0 +1,6 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/AwsCloudNative.Api/AwsCloudNative.Api.csproj" />
+    <Project Path="src/AwsCloudNative.Common/AwsCloudNative.Common.csproj" Id="6801ed52-6dff-48db-8ef1-fcc2f89cf959" />
+  </Folder>
+</Solution>
