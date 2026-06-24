@@ -12,15 +12,18 @@ builder.Services.AddControllers();
 // Lambda/ECS (execution role / task role) transparently.
 builder.Services.AddProductionAws(builder.Configuration);
 
+// Phase 1 · Track 2 — Cognito JWT authentication + authorisation policies
+builder.Services.AddProductionCognitoAuth(builder.Configuration);
+
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.MapOpenApi();
-}
+// ORDER MATTERS:
+// UseAuthentication must come before UseAuthorization.
+// The middleware pipeline is sequential — authentication resolves
+// the identity first, then authorisation evaluates it.
+app.UseAuthentication();
+app.UseAuthorization();
 
-app.UseHttpsRedirection();
 app.MapControllers();
 
 app.Run();
