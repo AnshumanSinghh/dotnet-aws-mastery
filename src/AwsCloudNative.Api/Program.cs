@@ -37,12 +37,20 @@ builder.Services.AddProductionCognitoAuth(builder.Configuration);
 // the app refuses to start with a clear descriptive error.
 builder.Services.AddProductionSecretsOptions(builder.Configuration);
 
+// ── Step 6: VPC-aware networking + health checks (Track 4)
+builder.Services.AddProductionNetworking();
+
 var app = builder.Build();
 
 // ORDER MATTERS:
+// UseProductionNetworking - before Auth and Authz
 // UseAuthentication must come before UseAuthorization.
 // The middleware pipeline is sequential — authentication resolves
 // the identity first, then authorisation evaluates it.
+
+// /health — must be before auth so ALB can reach it.ALB doesnot use token that's why.
+app.UseProductionNetworking(); 
+
 app.UseAuthentication();
 app.UseAuthorization();
 
