@@ -43,6 +43,11 @@ builder.Services.AddProductionNetworking();
 // Phase 2 Track 1 — Lambda SDK client for direct invocation
 builder.Services.AddProductionLambdaClient();
 
+// Phase 2 Track 2 — IHttpClientFactory for API Gateway service-to-service calls
+// WHY AddHttpClient: manages connection pooling and handler lifetimes.
+// Never instantiate HttpClient directly in controllers or services.
+builder.Services.AddHttpClient();
+
 var app = builder.Build();
 
 // ORDER MATTERS:
