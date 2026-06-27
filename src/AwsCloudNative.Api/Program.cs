@@ -40,6 +40,9 @@ builder.Services.AddProductionSecretsOptions(builder.Configuration);
 // ── Step 6: VPC-aware networking + health checks (Track 4)
 builder.Services.AddProductionNetworking();
 
+// Phase 2 Track 1 — Lambda SDK client for direct invocation
+builder.Services.AddProductionLambdaClient();
+
 var app = builder.Build();
 
 // ORDER MATTERS:

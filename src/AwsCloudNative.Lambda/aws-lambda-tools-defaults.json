@@ -1,0 +1,18 @@
+{
+  "Information": [
+    "This file is used by AWS Lambda tools to set default deploy values.",
+    "It is NOT deployed with the function — it is tooling config only."
+  ],
+  "profile": "default",
+  "region": "ap-south-1",
+  "configuration": "Release",
+  "function-architecture": "x86_64",
+  "function-runtime": "dotnet10",
+  "function-memory-size": 512,
+  "function-timeout": 30,
+  "function-handler": "AwsCloudNative.Lambda::AwsCloudNative.Lambda.Functions.OrderProcessorFunction_ProcessOrder_Generated::ProcessOrder",
+  "function-name": null,  
+  "s3-prefix": "AwsCloudNative.Lambda/",
+  "template": "serverless.template",
+  "template-parameters": ""
+}
