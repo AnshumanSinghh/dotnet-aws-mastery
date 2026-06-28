@@ -1,0 +1,60 @@
+{
+  "family": "acn-orders-api",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": [ "FARGATE" ],
+  "cpu": "512",
+  "memory": "1024",
+
+  "taskRoleArn": "arn:aws:iam::YOUR_ACCOUNT_ID:role/acn-orders-task-role",
+  "executionRoleArn": "arn:aws:iam::YOUR_ACCOUNT_ID:role/ecsTaskExecutionRole",
+
+  "containerDefinitions": [
+    {
+      "name": "acn-orders-api",
+      "image": "YOUR_ACCOUNT_ID.dkr.ecr.ap-south-1.amazonaws.com/acn-orders-api:latest",
+      "essential": true,
+
+      "portMappings": [
+        {
+          "containerPort": 8080,
+          "protocol": "tcp"
+        }
+      ],
+
+      "environment": [
+        {
+          "name": "ASPNETCORE_ENVIRONMENT",
+          "value": "Production"
+        },
+        {
+          "name": "ASPNETCORE_URLS",
+          "value": "http://+:8080"
+        },
+        {
+          "name": "Aws__Region",
+          "value": "ap-south-1"
+        }
+      ],
+
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/acn-orders-api",
+          "awslogs-region": "ap-south-1",
+          "awslogs-stream-prefix": "ecs",
+          "awslogs-create-group": "true"
+        }
+      },
+
+      "healthCheck": {
+        "command": [ "CMD-SHELL", "curl -f http://localhost:8080/health || exit 1" ],
+        "interval": 30,
+        "timeout": 5,
+        "retries": 3,
+        "startPeriod": 60
+      },
+
+      "stopTimeout": 25
+    }
+  ]
+}

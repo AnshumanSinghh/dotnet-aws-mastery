@@ -48,6 +48,9 @@ builder.Services.AddProductionLambdaClient();
 // Never instantiate HttpClient directly in controllers or services.
 builder.Services.AddHttpClient();
 
+// Phase 2 Track 3 — ECS health checks + graceful shutdown
+builder.Services.AddProductionEcs();
+
 var app = builder.Build();
 
 // ORDER MATTERS:
