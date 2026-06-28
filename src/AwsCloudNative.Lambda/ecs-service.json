@@ -1,0 +1,26 @@
+{
+  "cluster": "acn-orders-cluster",
+  "serviceName": "acn-orders-api-service",
+  "taskDefinition": "acn-orders-api",
+  "desiredCount": 2,
+  "launchType": "FARGATE",
+
+  "networkConfiguration": {
+    "awsvpcConfiguration": {
+      "subnets": [ "YOUR_PUBLIC_SUBNET_A", "YOUR_PUBLIC_SUBNET_B" ],
+      "securityGroups": [ "YOUR_SG_ACN_ORDERS_API" ],
+      "assignPublicIp": "ENABLED"
+    }
+  },
+
+  "deploymentConfiguration": {
+    "minimumHealthyPercent": 100,
+    "maximumPercent": 200,
+    "deploymentCircuitBreaker": {
+      "enable": true,
+      "rollback": true
+    }
+  },
+
+  "healthCheckGracePeriodSeconds": 60
+}

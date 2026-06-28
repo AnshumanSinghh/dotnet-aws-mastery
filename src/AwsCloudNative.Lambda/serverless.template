@@ -1,13 +1,16 @@
 {
   "AWSTemplateFormatVersion": "2010-09-09",
   "Transform": "AWS::Serverless-2016-10-31",
-  "Description": "AwsCloudNative.NET — Order Processor Lambda + HTTP API Gateway",
-
+  "Description": "AwsCloudNative.NET — Order Processor Lambda + HTTP API Gateway This template is partially managed by Amazon.Lambda.Annotations (v1.8.0.0).",
   "Parameters": {
     "Environment": {
       "Type": "String",
       "Default": "dev",
-      "AllowedValues": ["dev", "staging", "prod"],
+      "AllowedValues": [
+        "dev",
+        "staging",
+        "prod"
+      ],
       "Description": "Deployment environment. Controls function name prefix and throttle limits."
     },
     "CognitoUserPoolId": {
@@ -19,28 +22,30 @@
       "Description": "Cognito App Client ID registered for this API."
     }
   },
-
   "Globals": {
     "Function": {
-      "Runtime":      "dotnet10",
-      "MemorySize":   512,
-      "Timeout":      30,
-      "Architectures": ["x86_64"],
+      "Runtime": "dotnet10",
+      "MemorySize": 512,
+      "Timeout": 30,
+      "Architectures": [
+        "x86_64"
+      ],
       "Environment": {
         "Variables": {
-          "ASPNETCORE_ENVIRONMENT": { "Ref": "Environment" }
+          "ASPNETCORE_ENVIRONMENT": {
+            "Ref": "Environment"
+          }
         }
       }
     }
   },
-
   "Resources": {
-
     "OrderHttpApi": {
       "Type": "AWS::Serverless::HttpApi",
       "Properties": {
-        "StageName": { "Ref": "Environment" },
-
+        "StageName": {
+          "Ref": "Environment"
+        },
         "Auth": {
           "DefaultAuthorizer": "CognitoJwtAuthorizer",
           "Authorizers": {
@@ -50,51 +55,64 @@
                 "issuer": {
                   "Fn::Sub": "https://cognito-idp.ap-south-1.amazonaws.com/${CognitoUserPoolId}"
                 },
-                "audience": [{ "Ref": "CognitoAppClientId" }]
+                "audience": [
+                  {
+                    "Ref": "CognitoAppClientId"
+                  }
+                ]
               }
             }
           }
         },
-
         "DefaultRouteSettings": {
-          "ThrottlingRateLimit":  100,
+          "ThrottlingRateLimit": 100,
           "ThrottlingBurstLimit": 200
         },
-
         "CorsConfiguration": {
-          "AllowOrigins":  ["*"],
-          "AllowMethods":  ["GET", "POST", "OPTIONS"],
-          "AllowHeaders":  ["Authorization", "Content-Type", "X-Correlation-Id"]
+          "AllowOrigins": [
+            "*"
+          ],
+          "AllowMethods": [
+            "GET",
+            "POST",
+            "OPTIONS"
+          ],
+          "AllowHeaders": [
+            "Authorization",
+            "Content-Type",
+            "X-Correlation-Id"
+          ]
         }
       }
     },
-
     "OrderProcessorFunction": {
       "Type": "AWS::Serverless::Function",
       "Properties": {
-        "FunctionName": { "Fn::Sub": "acn-${Environment}-order-processor" },
+        "FunctionName": {
+          "Fn::Sub": "acn-${Environment}-order-processor"
+        },
         "Handler": "AwsCloudNative.Lambda::AwsCloudNative.Lambda.Functions.OrderProcessorFunction_ProcessOrder_Generated::ProcessOrder",
         "CodeUri": "./",
-
         "Events": {
           "PostOrders": {
             "Type": "HttpApi",
             "Properties": {
-              "ApiId": { "Ref": "OrderHttpApi" },
+              "ApiId": {
+                "Ref": "OrderHttpApi"
+              },
               "Method": "POST",
-              "Path":   "/orders",
+              "Path": "/orders",
               "Auth": {
                 "Authorizer": "CognitoJwtAuthorizer"
               }
             }
           }
         },
-
         "Policies": [
           {
             "Statement": [
               {
-                "Sid":    "AllowCloudWatchLogs",
+                "Sid": "AllowCloudWatchLogs",
                 "Effect": "Allow",
                 "Action": [
                   "logs:CreateLogGroup",
@@ -110,21 +128,23 @@
         ]
       }
     },
-
     "OrderHealthFunction": {
       "Type": "AWS::Serverless::Function",
       "Properties": {
-        "FunctionName": { "Fn::Sub": "acn-${Environment}-order-health" },
+        "FunctionName": {
+          "Fn::Sub": "acn-${Environment}-order-health"
+        },
         "Handler": "AwsCloudNative.Lambda::AwsCloudNative.Lambda.Functions.OrderProcessorFunction_Health_Generated::Health",
         "CodeUri": "./",
-
         "Events": {
           "GetHealth": {
             "Type": "HttpApi",
             "Properties": {
-              "ApiId":   { "Ref": "OrderHttpApi" },
-              "Method":  "GET",
-              "Path":    "/health",
+              "ApiId": {
+                "Ref": "OrderHttpApi"
+              },
+              "Method": "GET",
+              "Path": "/health",
               "Auth": {
                 "Authorizer": "NONE"
               }
@@ -132,9 +152,43 @@
           }
         }
       }
+    },
+    "AwsCloudNativeLambdaFunctions1GetGenerated": {
+      "Type": "AWS::Serverless::Function",
+      "Metadata": {
+        "Tool": "Amazon.Lambda.Annotations",
+        "SyncedEvents": [
+          "RootGet"
+        ],
+        "SyncedEventProperties": {
+          "RootGet": [
+            "Path",
+            "Method"
+          ]
+        }
+      },
+      "Properties": {
+        "Runtime": "dotnet10",
+        "CodeUri": ".",
+        "MemorySize": 512,
+        "Timeout": 30,
+        "Policies": [
+          "AWSLambdaBasicExecutionRole"
+        ],
+        "PackageType": "Zip",
+        "Handler": "AwsCloudNative.Lambda::AwsCloudNative.Lambda.Functions1_Get_Generated::Get",
+        "Events": {
+          "RootGet": {
+            "Type": "Api",
+            "Properties": {
+              "Path": "/",
+              "Method": "GET"
+            }
+          }
+        }
+      }
     }
   },
-
   "Outputs": {
     "ApiEndpoint": {
       "Description": "HTTP API Gateway base URL for this environment",

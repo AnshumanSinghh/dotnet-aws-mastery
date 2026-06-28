@@ -1,0 +1,15 @@
+# WHY .dockerignore: Prevents unnecessary files from being sent
+# to the Docker build context. Without this, node_modules, bin, obj,
+# and .git directories bloat every build — slowing down CI/CD pipelines.
+
+**/.git
+**/.vs
+**/.idea
+**/bin
+**/obj
+**/*.user
+**/*.suo
+**/Dockerfile*
+**/.dockerignore
+**/README.md
+**/launchSettings.json
