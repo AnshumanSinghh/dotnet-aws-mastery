@@ -4,4 +4,7 @@
     <Project Path="src/AwsCloudNative.Common/AwsCloudNative.Common.csproj" Id="6801ed52-6dff-48db-8ef1-fcc2f89cf959" />
     <Project Path="src/AwsCloudNative.Lambda/AwsCloudNative.Lambda.csproj" />
   </Folder>
+  <Folder Name="/src/AwsCloudNative.Infrastructure/">
+    <File Path="ec2-instance.json" />
+  </Folder>
 </Solution>

@@ -1,0 +1,91 @@
+{
+  "Description": "EC2 instance definition for AwsCloudNative Orders API",
+
+  "Parameters": {
+    "Environment": {
+      "Type": "String",
+      "Default": "dev",
+      "AllowedValues": [ "dev", "staging", "prod" ]
+    },
+    "InstanceType": {
+      "Type": "String",
+      "Default": "t3.micro",
+      "Description": "t3.micro is free-tier eligible. Use t3.small or above for production."
+    },
+    "AmiId": {
+      "Type": "AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>",
+      "Default": "/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64",
+      "Description": "Amazon Linux 2023 latest AMI — resolved dynamically from SSM public parameter."
+    },
+    "SubnetId": {
+      "Type": "String",
+      "Description": "Public subnet ID from Track 4 VPC setup."
+    },
+    "SecurityGroupId": {
+      "Type": "String",
+      "Description": "sg-acn-orders-api security group ID from Track 4."
+    },
+    "InstanceProfileName": {
+      "Type": "String",
+      "Default": "acn-orders-ec2-instance-profile",
+      "Description": "Instance Profile carrying the acn-orders-ec2-role IAM role."
+    }
+  },
+
+  "Resources": {
+
+    "OrdersApiInstance": {
+      "Type": "AWS::EC2::Instance",
+      "Properties": {
+        "InstanceType": { "Ref": "InstanceType" },
+        "ImageId": { "Ref": "AmiId" },
+        "SubnetId": { "Ref": "SubnetId" },
+        "SecurityGroupIds": [ { "Ref": "SecurityGroupId" } ],
+
+        "IamInstanceProfile": { "Ref": "InstanceProfileName" },
+
+        "MetadataOptions": {
+          "HttpTokens": "required",
+          "HttpPutResponseHopLimit": 1,
+          "HttpEndpoint": "enabled"
+        },
+
+        "UserData": {
+          "Fn::Base64": {
+            "Fn::Sub": "#!/bin/bash\nbash <(aws s3 cp s3://acn-orders-artifacts-${Environment}/scripts/ec2-userdata.sh -)"
+          }
+        },
+
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": { "Fn::Sub": "acn-${Environment}-orders-api" }
+          },
+          {
+            "Key": "Environment",
+            "Value": { "Ref": "Environment" }
+          },
+          {
+            "Key": "Service",
+            "Value": "orders-api"
+          },
+          {
+            "Key": "ManagedBy",
+            "Value": "CloudFormation"
+          }
+        ]
+      }
+    }
+  },
+
+  "Outputs": {
+    "InstanceId": {
+      "Description": "EC2 instance ID — use this to SSH or run SSM Session Manager.",
+      "Value": { "Ref": "OrdersApiInstance" }
+    },
+    "PrivateIp": {
+      "Description": "Private IP of the instance within the VPC.",
+      "Value": { "Fn::GetAtt": [ "OrdersApiInstance", "PrivateIp" ] }
+    }
+  }
+}
