@@ -22,6 +22,8 @@
 
 	<PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="9.*" />
 	<PackageReference Include="AWSSDK.ECS" Version="3.7.*" />
+	<PackageReference Include="Microsoft.OpenApi" Version="3.7.0" />
+	  
 
 	<!-- EC2 -->
 	<PackageReference Include="AWSSDK.EC2" Version="3.7.*" />
