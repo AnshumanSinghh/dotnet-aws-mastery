@@ -51,6 +51,9 @@ builder.Services.AddHttpClient();
 // Phase 2 Track 3 — ECS health checks + graceful shutdown
 builder.Services.AddProductionEcs();
 
+// Phase 2 Track 4 — EC2 IMDS named HttpClient
+builder.Services.AddProductionEc2();
+
 var app = builder.Build();
 
 // ORDER MATTERS:
