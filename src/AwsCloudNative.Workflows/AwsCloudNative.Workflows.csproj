@@ -1,0 +1,27 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<TargetFramework>net10.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<RootNamespace>AwsCloudNative.Workflows</RootNamespace>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="AWSSDK.StepFunctions" Version="3.7.*" />
+		<PackageReference Include="AWSSDK.Extensions.NETCore.Setup" Version="3.7.*" />
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.*" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\AwsCloudNative.Common\AwsCloudNative.Common.csproj" />
+	</ItemGroup>
+
+	<!--
+    WHY EmbeddedResource: ASL (Amazon States Language) JSON definition files
+    are embedded in the assembly so they deploy with the library automatically.
+    No file path management needed at runtime — read via Assembly.GetManifestResourceStream.
+  -->
+	<ItemGroup>
+		<EmbeddedResource Include="Definitions\*.asl.json" />
+	</ItemGroup>
+</Project>

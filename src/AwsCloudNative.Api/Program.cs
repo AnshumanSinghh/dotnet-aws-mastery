@@ -54,6 +54,9 @@ builder.Services.AddProductionEcs();
 // Phase 2 Track 4 — EC2 IMDS named HttpClient
 builder.Services.AddProductionEc2();
 
+// Phase 2 Track 5 — Step Functions workflow execution
+builder.Services.AddProductionWorkflows();
+
 var app = builder.Build();
 
 // ORDER MATTERS:
