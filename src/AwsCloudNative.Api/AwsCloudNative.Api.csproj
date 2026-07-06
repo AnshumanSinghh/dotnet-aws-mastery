@@ -32,6 +32,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\AwsCloudNative.Common\AwsCloudNative.Common.csproj" />
+    <ProjectReference Include="..\AwsCloudNative.Workflows\AwsCloudNative.Workflows.csproj" />    
   </ItemGroup>
 
 </Project>

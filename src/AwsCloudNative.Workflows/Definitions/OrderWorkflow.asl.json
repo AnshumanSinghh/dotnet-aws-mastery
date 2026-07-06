@@ -1,0 +1,197 @@
+{
+  "Comment": "Order processing workflow — validates, reserves inventory, charges payment, sends confirmation. Compensates on payment failure.",
+  "StartAt": "ValidateOrder",
+
+  "States": {
+
+    "ValidateOrder": {
+      "Type": "Task",
+      "Comment": "Calls the OrderProcessor Lambda to validate business rules. Fails fast with OrderValidationFailed on invalid orders — no inventory reserved yet so no compensation needed.",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Parameters": {
+        "FunctionName.$": "$.validateOrderFunctionArn",
+        "Payload.$": "$"
+      },
+      "ResultPath": "$.validationResult",
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "Lambda.ServiceException",
+            "Lambda.AWSLambdaException",
+            "Lambda.TooManyRequestsException"
+          ],
+          "IntervalSeconds": 2,
+          "MaxAttempts": 3,
+          "BackoffRate": 2.0,
+          "Comment": "Retry Lambda infrastructure errors with exponential backoff. Do NOT retry OrderValidationFailed — it is a business error, not a transient failure."
+        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": [ "OrderValidationFailed" ],
+          "Next": "OrderFailed",
+          "ResultPath": "$.error",
+          "Comment": "Business validation failure — route directly to failed terminal state."
+        },
+        {
+          "ErrorEquals": [ "States.ALL" ],
+          "Next": "OrderFailed",
+          "ResultPath": "$.error",
+          "Comment": "Catch-all for unexpected errors after retries exhausted."
+        }
+      ],
+      "Next": "ReserveInventory"
+    },
+
+    "ReserveInventory": {
+      "Type": "Task",
+      "Comment": "SDK Integration — calls DynamoDB directly without a Lambda. Updates inventory table to reserve stock for this order. No Lambda cold start cost.",
+      "Resource": "arn:aws:states:::dynamodb:updateItem",
+      "Parameters": {
+        "TableName": "acn-inventory",
+        "Key": {
+          "PK": { "S.$": "$.orderId" }
+        },
+        "UpdateExpression": "SET ReservedQuantity = ReservedQuantity + :qty, UpdatedAt = :now",
+        "ExpressionAttributeValues": {
+          ":qty": { "N": "1" },
+          ":now": { "S.$": "$$.Execution.StartTime" }
+        },
+        "ConditionExpression": "AvailableQuantity >= :qty",
+        "ReturnValues": "ALL_NEW"
+      },
+      "ResultPath": "$.inventoryResult",
+      "Retry": [
+        {
+          "ErrorEquals": [ "DynamoDB.ProvisionedThroughputExceededException" ],
+          "IntervalSeconds": 1,
+          "MaxAttempts": 5,
+          "BackoffRate": 2.0
+        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": [ "DynamoDB.ConditionalCheckFailedException" ],
+          "Next": "OrderFailed",
+          "ResultPath": "$.error",
+          "Comment": "ConditionExpression failed — insufficient inventory. Route to failed state."
+        },
+        {
+          "ErrorEquals": [ "States.ALL" ],
+          "Next": "OrderFailed",
+          "ResultPath": "$.error"
+        }
+      ],
+      "Next": "ProcessPayment"
+    },
+
+    "ProcessPayment": {
+      "Type": "Task",
+      "Comment": "Calls payment Lambda with idempotency key. If payment fails, we must compensate (unreserve) the inventory reserved in the previous step.",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Parameters": {
+        "FunctionName.$": "$.processPaymentFunctionArn",
+        "Payload.$": "$"
+      },
+      "ResultPath": "$.paymentResult",
+      "TimeoutSeconds": 30,
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "Lambda.ServiceException",
+            "Lambda.TooManyRequestsException"
+          ],
+          "IntervalSeconds": 2,
+          "MaxAttempts": 2,
+          "BackoffRate": 2.0,
+          "Comment": "Only retry infrastructure errors — never retry PaymentProcessingFailed (would double-charge without idempotency key check in Lambda)."
+        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": [ "PaymentProcessingFailed" ],
+          "Next": "CompensateInventory",
+          "ResultPath": "$.error",
+          "Comment": "Payment failed — must unreserve inventory before marking order failed."
+        },
+        {
+          "ErrorEquals": [ "States.Timeout" ],
+          "Next": "CompensateInventory",
+          "ResultPath": "$.error",
+          "Comment": "Payment timed out — unknown outcome, compensate conservatively."
+        },
+        {
+          "ErrorEquals": [ "States.ALL" ],
+          "Next": "CompensateInventory",
+          "ResultPath": "$.error"
+        }
+      ],
+      "Next": "SendConfirmation"
+    },
+
+    "CompensateInventory": {
+      "Type": "Task",
+      "Comment": "Saga compensation step — unreserves inventory when payment fails. This is the rollback action for ReserveInventory. SDK Integration — no Lambda needed.",
+      "Resource": "arn:aws:states:::dynamodb:updateItem",
+      "Parameters": {
+        "TableName": "acn-inventory",
+        "Key": {
+          "PK": { "S.$": "$.orderId" }
+        },
+        "UpdateExpression": "SET ReservedQuantity = ReservedQuantity - :qty",
+        "ExpressionAttributeValues": {
+          ":qty": { "N": "1" }
+        }
+      },
+      "ResultPath": "$.compensationResult",
+      "Retry": [
+        {
+          "ErrorEquals": [ "States.ALL" ],
+          "IntervalSeconds": 1,
+          "MaxAttempts": 5,
+          "BackoffRate": 2.0,
+          "Comment": "Retry compensation aggressively — failure to compensate leaves inventory in bad state."
+        }
+      ],
+      "Next": "OrderFailed"
+    },
+
+    "SendConfirmation": {
+      "Type": "Task",
+      "Comment": "SDK Integration — publishes order confirmation to SQS for async email/SMS delivery. Decoupled from the payment flow — confirmation failure does not affect order status.",
+      "Resource": "arn:aws:states:::sqs:sendMessage",
+      "Parameters": {
+        "QueueUrl.$": "$.confirmationQueueUrl",
+        "MessageBody": {
+          "OrderId.$": "$.orderId",
+          "CustomerId.$": "$.customerId",
+          "Amount.$": "$.amount",
+          "Status": "Confirmed"
+        },
+        "MessageGroupId.$": "$.orderId"
+      },
+      "ResultPath": "$.confirmationResult",
+      "Retry": [
+        {
+          "ErrorEquals": [ "States.ALL" ],
+          "IntervalSeconds": 1,
+          "MaxAttempts": 3,
+          "BackoffRate": 2.0
+        }
+      ],
+      "Next": "OrderSucceeded"
+    },
+
+    "OrderSucceeded": {
+      "Type": "Succeed",
+      "Comment": "Terminal success state. Execution history records full input/output chain."
+    },
+
+    "OrderFailed": {
+      "Type": "Fail",
+      "Comment": "Terminal failure state. Step Functions stores the error and cause in execution history.",
+      "Error": "OrderProcessingFailed",
+      "Cause": "Order processing failed. Check execution history for the failing state and error details."
+    }
+  }
+}
