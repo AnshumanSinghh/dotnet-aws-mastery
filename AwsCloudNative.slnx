@@ -8,4 +8,8 @@
   <Folder Name="/src/AwsCloudNative.Infrastructure/">
     <File Path="ec2-instance.json" />
   </Folder>
+  <Folder Name="/src/Secrets/">
+    <File Path="How to Resume.md" />
+    <File Path="learning_state.md" />
+  </Folder>
 </Solution>
