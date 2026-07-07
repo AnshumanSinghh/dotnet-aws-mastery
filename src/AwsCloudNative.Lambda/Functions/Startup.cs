@@ -3,6 +3,7 @@ using AwsCloudNative.Lambda.Extensions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
+[assembly: LambdaGlobalProperties(GenerateMain = true)]
 namespace AwsCloudNative.Lambda.Functions;
 
 /// <summary>
