@@ -1,7 +1,7 @@
 {
   "AWSTemplateFormatVersion": "2010-09-09",
   "Transform": "AWS::Serverless-2016-10-31",
-  "Description": "AwsCloudNative.NET — Order Processor Lambda + HTTP API Gateway This template is partially managed by Amazon.Lambda.Annotations (v1.8.0.0).",
+  "Description": "AwsCloudNative.NET — Order Processor Lambda + HTTP API Gateway This template is partially managed by Amazon.Lambda.Annotations (v2.2.0.0).",
   "Parameters": {
     "Environment": {
       "Type": "String",
@@ -176,7 +176,7 @@
           "AWSLambdaBasicExecutionRole"
         ],
         "PackageType": "Zip",
-        "Handler": "AwsCloudNative.Lambda::AwsCloudNative.Lambda.Functions1_Get_Generated::Get",
+        "Handler": "AwsCloudNative.Lambda",
         "Events": {
           "RootGet": {
             "Type": "Api",
@@ -184,6 +184,11 @@
               "Path": "/",
               "Method": "GET"
             }
+          }
+        },
+        "Environment": {
+          "Variables": {
+            "ANNOTATIONS_HANDLER": "Get"
           }
         }
       }

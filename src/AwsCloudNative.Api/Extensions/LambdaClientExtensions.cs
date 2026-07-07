@@ -1,4 +1,6 @@
-﻿namespace AwsCloudNative.Api.Extensions
+﻿using Amazon.Lambda;
+
+namespace AwsCloudNative.Api.Extensions
 {
     /// <summary>
     /// Registers the AWS Lambda client for direct function invocation

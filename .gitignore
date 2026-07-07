@@ -6,3 +6,4 @@
 /src/AwsCloudNative.*/obj*
 /src/AwsCloudNative.*/bin*
 *.http
+/src/Secret*

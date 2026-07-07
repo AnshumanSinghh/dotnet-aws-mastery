@@ -7,6 +7,9 @@ using Amazon.Lambda.Annotations.APIGateway;
 // Assembly attribute to enable the Lambda function's JSON input to be converted into a .NET class.
 //[assembly: LambdaSerializer(typeof(Amazon.Lambda.Serialization.SystemTextJson.DefaultLambdaJsonSerializer))]
 
+// Enable auto-generation of the Main entry point for .NET 10
+[assembly: LambdaGlobalProperties(GenerateMain = true)]
+
 namespace AwsCloudNative.Lambda;
 
 public class Functions1
