@@ -93,7 +93,7 @@ namespace AwsCloudNative.Workflows.Extensions
                 ExecutionArn = response.ExecutionArn,
                 Status = StepFunctionsConstants.ExecutionStatus.Running,
                 OrderId = input.OrderId,
-                StartedAtUtc = response.StartDate.ToUniversalTime()
+                StartedAtUtc = response.StartDate?.ToUniversalTime() ?? DateTime.UtcNow
             };
         }
 
@@ -120,10 +120,10 @@ namespace AwsCloudNative.Workflows.Extensions
                 ExecutionArn = response.ExecutionArn,
                 Status = response.Status.Value,
                 OrderId = response.Name,
-                StartedAtUtc = response.StartDate.ToUniversalTime(),
+                StartedAtUtc = response.StartDate?.ToUniversalTime() ?? DateTime.UtcNow,
                 CompletedAtUtc = response.StopDate == default
                     ? null
-                    : response.StopDate.ToUniversalTime(),
+                    : response.StopDate?.ToUniversalTime() ?? DateTime.UtcNow,
 
                 // PITFALL: response.Cause may contain internal Lambda stack traces.
                 // Never forward raw Cause to the client — log it internally only.
