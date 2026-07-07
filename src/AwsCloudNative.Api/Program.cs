@@ -1,4 +1,5 @@
 using AwsCloudNative.Api.Extensions;
+using AwsCloudNative.Api.Services;
 using AwsCloudNative.Common.Options;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -56,6 +57,10 @@ builder.Services.AddProductionEc2();
 
 // Phase 2 Track 5 — Step Functions workflow execution
 builder.Services.AddProductionWorkflows();
+
+// Phase 3 Track 1 — Amazon S3
+builder.Services.AddProductionS3();
+builder.Services.AddScoped<S3FileService>();
 
 var app = builder.Build();
 
