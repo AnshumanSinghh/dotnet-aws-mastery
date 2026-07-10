@@ -2,6 +2,7 @@
   <Folder Name="/src/">
     <Project Path="src/AwsCloudNative.Api/AwsCloudNative.Api.csproj" />
     <Project Path="src/AwsCloudNative.Common/AwsCloudNative.Common.csproj" Id="6801ed52-6dff-48db-8ef1-fcc2f89cf959" />
+    <Project Path="src/AwsCloudNative.Data/AwsCloudNative.Data.csproj" Id="df121d70-6775-4861-a2bb-24195215758b" />
     <Project Path="src/AwsCloudNative.Lambda/AwsCloudNative.Lambda.csproj" />
     <Project Path="src/AwsCloudNative.Workflows/AwsCloudNative.Workflows.csproj" Id="8319fb9e-d6e9-448d-a6b9-dbfb9547af3e" />
   </Folder>

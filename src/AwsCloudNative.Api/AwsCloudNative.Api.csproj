@@ -31,10 +31,14 @@
 
 	<!-- AwsCloudNative.Api.csproj -->
 	<PackageReference Include="AWSSDK.S3" Version="4.0.100.2" />
+
+	<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.*" />
+	<PackageReference Include="AspNetCore.HealthChecks.NpgSql" Version="9.*" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\AwsCloudNative.Common\AwsCloudNative.Common.csproj" />
+    <ProjectReference Include="..\AwsCloudNative.Data\AwsCloudNative.Data.csproj" />
     <ProjectReference Include="..\AwsCloudNative.Workflows\AwsCloudNative.Workflows.csproj" />    
   </ItemGroup>
 

@@ -1,6 +1,10 @@
 using AwsCloudNative.Api.Extensions;
+using AwsCloudNative.Api.HealthChecks;
 using AwsCloudNative.Api.Services;
 using AwsCloudNative.Common.Options;
+using AwsCloudNative.Data;
+using AwsCloudNative.Data.Extensions;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -61,6 +65,22 @@ builder.Services.AddProductionWorkflows();
 // Phase 3 Track 1 — Amazon S3
 builder.Services.AddProductionS3();
 builder.Services.AddScoped<S3FileService>();
+
+// Phase 3 Track 2 — Amazon RDS + EF Core 10
+builder.Services.AddProductionDatabase(builder.Configuration);
+
+// WHY AddDbContextFactory in addition to AddDbContext:
+// RdsHealthCheck runs outside HTTP request scope — it needs
+// IDbContextFactory to create DbContext instances independently.
+builder.Services.AddDbContextFactory<OrdersDbContext>(
+    options => options.UseNpgsql(), ServiceLifetime.Scoped);
+
+// Register RDS health check
+builder.Services
+    .AddHealthChecks()
+    .AddCheck<RdsHealthCheck>(
+        name: "rds-postgresql",
+        tags: ["live", "database"]);
 
 var app = builder.Build();
 
