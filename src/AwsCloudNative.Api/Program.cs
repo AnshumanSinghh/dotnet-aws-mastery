@@ -82,6 +82,10 @@ builder.Services
         name: "rds-postgresql",
         tags: ["live", "database"]);
 
+// Phase 3 Track 3 — Amazon DynamoDB
+builder.Services.AddProductionDynamoDb();
+builder.Services.AddSingleton<ProductService>();
+
 var app = builder.Build();
 
 // ORDER MATTERS:
