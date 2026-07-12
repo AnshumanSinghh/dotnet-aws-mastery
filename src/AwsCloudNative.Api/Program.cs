@@ -86,6 +86,13 @@ builder.Services
 builder.Services.AddProductionDynamoDb();
 builder.Services.AddSingleton<ProductService>();
 
+// Phase 3 Track 4 — ElastiCache Valkey/Redis
+builder.Services.AddProductionCache();
+builder.Services.AddSingleton<CacheService>();
+builder.Services
+    .AddHealthChecks()
+    .AddCheck<CacheHealthCheck>("elasticache-valkey", tags: ["live", "cache"]);
+
 var app = builder.Build();
 
 // ORDER MATTERS:
